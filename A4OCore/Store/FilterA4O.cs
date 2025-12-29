@@ -1,0 +1,123 @@
+﻿using A4OCore.BLCore;
+using A4OCore.Models;
+
+namespace A4OCore.Store
+{
+    public enum OrderByEnum { Id, ParentName, ParentIds, Date, DateChange, Deleted }
+    public class FilterA4O
+    {
+        public long[]? Ids { get; private set; }
+        public bool InvertSelectionIds { get; private set; } = false;
+        public string[]? ParentName { get; private set; }
+        public bool InvertSelectionParentIds { get; private set; } = false;
+        public long[]? ParentIds { get; private set; }
+        public (DateTime? from, DateTime? to)? Date { get; private set; }
+        public bool InvertSelectionDate { get; private set; } = false;
+        public int? Top { get; private set; }
+        public int? Offset { get; private set; }
+        public (DateTime? from, DateTime? to)? DateChange { get; private set; }
+        public bool InvertSelectionDateChange { get; private set; } = false;
+        public bool? Deleted { get; private set; }
+        public int[]? ResultValues { get; private set; }
+        public bool Ascending { get; private set; }
+        public OrderByEnum? OrderBy { get; private set; }
+
+        public FilterA4O()
+        {
+        }
+        public FilterA4O ResultOrderBy(OrderByEnum? orderByEnum, bool asc = true)
+        {
+            this.OrderBy = orderByEnum;
+            this.Ascending = asc;
+            return this;
+
+        }
+
+
+        public FilterA4O ResultTop(int? top, int? offset = null, OrderByEnum? orderByEnum = null, bool asc = true)
+        {
+            if (Offset.HasValue && !top.HasValue) { throw new Exception("invalid Operation!!!!"); }
+            this.Top = top;
+            this.Offset = offset;
+
+            return this.ResultOrderBy(orderByEnum ?? OrderByEnum.Id, asc);
+        }
+
+
+        public FilterA4O WhereId(bool invertSelection, params long[]? ids)
+        {
+            this.Ids = ids;
+            this.InvertSelectionIds = invertSelection;
+            return this;
+        }
+        public FilterA4O WhereId(params long[]? ids)
+        {
+            this.Ids = ids;
+            this.InvertSelectionIds = false;
+            return this;
+        }
+
+
+        public FilterA4O WhereParentName(params string[] parentName)
+        {
+            this.ParentName = parentName;
+            return this;
+        }
+
+        public FilterA4O WhereParentId(params long[]? ids)
+        {
+            this.ParentIds = ids;
+            return this;
+        }
+        public FilterA4O WhereIsDeleted(bool? isLogicalDeleted)
+        {
+            this.Deleted = isLogicalDeleted;
+            return this;
+        }
+
+        public FilterA4O WhereDate(DateTime? from, DateTime? to = null, bool invertSelectionDate = false)
+        {
+            this.Date = from == to == null ? null : (from, to);
+            this.InvertSelectionDate = invertSelectionDate;
+            return this;
+        }
+        public FilterA4O WhereDateChange(DateTime? from, DateTime? to = null, bool invertSelectionDate = false)
+        {
+            this.DateChange = from == to == null ? null : (from, to);
+            this.InvertSelectionDateChange = invertSelectionDate;
+            return this;
+        }
+        public FilterA4O SetReultValues(ElementBLA4O el, params string[] valuesNames)
+        {
+            return SetReultValues(el.Design, MapStringToIdItems(el.Design, valuesNames).ToArray());
+        }
+        public FilterA4O SetReultValues(ElementBLA4O el, params int[] valuesIds)
+        {
+
+            return SetReultValues(el.Design, valuesIds);
+        }
+        private static IEnumerable<int> MapStringToIdItems(DesignElement design, string[] valuesNames)
+        {
+            return valuesNames.Select(x => design.EnumItems[x]);
+
+        }
+        public FilterA4O SetReultValues(DesignElement design, params string[] valuesNames)
+        {
+            return SetReultValues(design, MapStringToIdItems(design, valuesNames).ToArray());
+        }
+        public FilterA4O SetReultValues(DesignElement design, params int[] valuesIds)
+        {
+            this.ResultValues = valuesIds.Select(x => design.ItemsDesignBase.First(d => d.IdElement == x).InfoData).ToArray();
+            return this;
+        }
+
+
+        public FilterA4O SetReultValuesInfoData(params int[] infosData)
+        {
+            this.ResultValues = infosData;
+            return this;
+        }
+
+
+    }
+}
