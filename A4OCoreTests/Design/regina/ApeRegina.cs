@@ -66,11 +66,7 @@ namespace A4OCore.BLCore.regina
             throw new NotImplementedException();
         }
 
-        public override void OnChange(params (string valueName, int idx)[] changedValues)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public override List<MessageA4O> OnCheck()
         {
             throw new NotImplementedException();

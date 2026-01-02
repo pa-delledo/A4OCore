@@ -57,10 +57,7 @@ namespace A4OCoreTests.Design.famiglia
             throw new NotImplementedException();
         }
 
-        public override void OnChange(params (string valueName, int idx)[] changedValues)
-        {
-            throw new NotImplementedException();
-        }
+        
 
         public override List<MessageA4O> OnCheck()
         {

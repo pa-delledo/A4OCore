@@ -238,7 +238,10 @@ namespace A4OCore.BLCore
         {
             return new List<MessageA4O>();
         }
-        public abstract void OnChange(params (string valueName, int idx)[] changedValues);
+        public virtual List<ActionDto>  OnChange(string elementName, int idx)
+        {
+            return new();
+        }
         public abstract void OnAction(string actionName);
         public abstract void OnButton(string buttonName, int idx);
         public abstract void OnSave();

@@ -13,7 +13,7 @@ namespace A4OCore.Models
         Task LoadByIdAsync(long id);
         void OnAction(string actionName);
         void OnButton(string buttonName, int idx);
-        void OnChange(params (string valueName, int idx)[] changedValues);
+        List<ActionDto> OnChange(string elementName, int idx);
         void OnOpen(bool isNew);
         List<MessageA4O> OnCheck();
         void CustomizeElementView(ViewValueDto clientValue);
