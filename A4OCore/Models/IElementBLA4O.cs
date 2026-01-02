@@ -14,14 +14,17 @@ namespace A4OCore.Models
         void OnAction(string actionName);
         void OnButton(string buttonName, int idx);
         void OnChange(params (string valueName, int idx)[] changedValues);
+        void OnOpen(bool isNew);
         List<MessageA4O> OnCheck();
+        void CustomizeElementView(ViewValueDto clientValue);
         void OnSave();
         void Save();
         Task SaveAsync();
         //void SetAcl(ElementA4ODto element, List<AclValueA4ODto> acl);
         //void SetDesignValue(ElementValueA4ODto val, ref DesignValueDto designValueDto);
 
-        List<ActionToExecuteDto> ActionAfterSave();
+        List<ActionDto> ActionAfterSave();
+        List<ActionDto> OnPreSave();
         List<ViewValueDto> GetElementsViewModel(List<(int idElemet, IEnumerable<int>? idx)>? filterElements = null);
         ElementA4ODto CurrentElement { get; set; }
         //ElementA4ODto ElementByParent(long id, ElementA4ODto parent);

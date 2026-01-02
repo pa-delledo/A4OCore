@@ -44,10 +44,4 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    
-	<Exec Command="xcopy &quot;$(TargetDir)\*&quot; &quot;..\..\reference&quot; /Y" />
-	  
-  </Target>
-
 </Project>

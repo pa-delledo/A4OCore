@@ -14,14 +14,18 @@ namespace A4OCore.BLCore
 
 
     {
-        public virtual List<ActionToExecuteDto> ActionAfterSave()
+
+        public virtual void OnOpen(bool isNew)
         {
-            List<ActionToExecuteDto> result = new();
-            result.Add(new ActionToExecuteDto()
-            {
-                ActionTypeEnum = ActionToDoDto.navigate,
-                Parameters = new Dictionary<string, string> { {ActionToExecuteDtoParameter.navigate_path.ToString(), "/element/" + this.CurrentElement.ElementName } }
-            });
+        }
+
+        public virtual List<ActionDto> ActionAfterSave()
+        {
+            List<ActionDto> result = new();
+            result.Add(
+                ActionConverter.CreateNavigateBackAction()
+            //ActionConverter.CreateNavigateAction("/element/" + this.CurrentElement.ElementName)
+            );
             return result;
 
         }
@@ -78,9 +82,14 @@ namespace A4OCore.BLCore
                 designValueDto.Idx = val.Idx;
                 designValueDto.Value = val.ToStringA4O();
                 SetDesignValue(val!, ref designValueDto);
-                designValueDtos.Add(designValueDto);
+                CustomizeElementView(designValueDto);
+                designValueDtos.Add(designValueDto); 
             }
             return designValueDtos;
+        }
+        public virtual void CustomizeElementView(ViewValueDto designValueDto)
+        {
+
         }
         public List<ElementValueA4ODto> GetElementsValue(JsonElement json)
         {
@@ -88,8 +97,16 @@ namespace A4OCore.BLCore
             List<ElementValueA4ODto> result = new List<ElementValueA4ODto>();
             // prendo la proprietà "values"
             if (!json.TryGetProperty("values", out JsonElement valuesElement))
+            {
                 return result;
+            }
 
+            if (!json.TryGetProperty("id", out JsonElement idProp))
+            {
+                return result;
+            }
+
+            var id = idProp.GetInt64();
             // verifico che sia un array
             if (valuesElement.ValueKind != JsonValueKind.Array)
                 return result;
@@ -112,7 +129,7 @@ namespace A4OCore.BLCore
 
                 ElementValueA4ODto obj = new ElementValueA4ODto();
                 obj.InfoData = cache.design.InfoData;
-                obj.Id = idElement;
+                obj.Id = id;
                 int idx = 0;
                 if (element.TryGetProperty("idx", out JsonElement jIdx))
                 {
@@ -343,7 +360,13 @@ namespace A4OCore.BLCore
             get
             {
                 var valueDesing = Design.ItemsDesignBase.First(x => x.IdElement == intEnumElement);
-                return CurrentElement?.Values.FirstOrDefault(x => x.InfoData == valueDesing.InfoData && x.Idx == idx);
+                var result= CurrentElement?.Values.FirstOrDefault(x => x.InfoData == valueDesing.InfoData && x.Idx == idx);
+                if(CurrentElement is not null && result is null)
+                {
+                    result = new ElementValueA4ODto() { InfoData = valueDesing.InfoData, Idx = idx, Id = this.CurrentElement.Id };
+                    CurrentElement?.Values.Add(result);
+                }
+                return result;
             }
         }
         public IEnumerable<ElementValueA4ODto> GetElementsSingle()
@@ -726,6 +749,11 @@ namespace A4OCore.BLCore
         public void SetDesignValue(ElementValueA4ODto val, ref ViewValueDto designValueDto)
         {
 
+        }
+
+        public virtual List<ActionDto> OnPreSave()
+        {
+            return [];
         }
 
 
