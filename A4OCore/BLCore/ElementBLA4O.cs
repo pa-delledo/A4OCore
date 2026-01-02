@@ -129,7 +129,7 @@ namespace A4OCore.BLCore
 
                 ElementValueA4ODto obj = new ElementValueA4ODto();
                 obj.InfoData = cache.design.InfoData;
-                obj.Id = id;
+                obj.Id = idElement;
                 int idx = 0;
                 if (element.TryGetProperty("idx", out JsonElement jIdx))
                 {
@@ -430,6 +430,10 @@ namespace A4OCore.BLCore
                 {
                     maxNumValues = allValuesGroup?.Max(x => x.Idx) ?? -1;
                     maxNumValues++;
+                }
+                if(currentTable == SingleValueTable)
+                {
+                    maxNumValues = 1;
                 }
                 var rowsDesignToAdd = groupDesign.ToList();
                 toAdd.AddRange(ValuesToAddForAlignTable(allValuesGroup, rowsDesignToAdd, maxNumValues));
