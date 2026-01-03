@@ -45,7 +45,7 @@ namespace A4OCore.BLCore.regina
         //[Inject]
        public ReginaBL regina { get; set; }
 
-        public List<List<CellViewA4ODto>> GetRows(Dictionary<string, object> parameters)
+        public List<ViewRowDto> GetRows(Dictionary<string, object> parameters)
         {
             
             
@@ -60,13 +60,15 @@ namespace A4OCore.BLCore.regina
             filterA4O.SetReultValues( regina,  ReginaBL.EnumReginaElement.nome.ToInt(), ReginaBL.EnumReginaElement.anno.ToInt(), ReginaBL.EnumReginaElement.giudizio.ToInt());
             
             var loaded=regina.StoreManager.Load(filterA4O);
-            var result = new List<List<CellViewA4ODto>>();
+            var result = new List<ViewRowDto>();
             foreach (var elementA4O in loaded)
             {
                 List<CellViewA4ODto> rowTmp = regina.GetRowSingle(elementA4O, ReginaBL.EnumReginaElement.nome.ToInt(), ReginaBL.EnumReginaElement.anno.ToInt(), ReginaBL.EnumReginaElement.giudizio.ToInt());
                 //regina.CurrentElement = elementA4O;
+                ViewRowDto row= new ViewRowDto();
+                row.ElementId = elementA4O.Id;
+                row.ElementName = elementA4O.ElementName;
 
-                
                 var cell = new CellViewA4ODto()
                 {
                     TypeElement=TypeCellViewBL.id,
@@ -87,7 +89,8 @@ namespace A4OCore.BLCore.regina
                 //{
                 //    Value = regina[ReginaBL.EnumReginaElement.giudizio.ToInt()].IntVal.ToString()
                 //};
-                result.Add(rowTmp);
+                row.Values=rowTmp;
+                result.Add(row);
 
             }
             //regina.StroreManager.Initialize();
@@ -125,8 +128,8 @@ namespace A4OCore.BLCore.regina
 
             var par = new Dictionary<string, object>();
             par.Add("date",dateTime);
-            List<List<CellViewA4ODto>> curr = view.GetRows(par);
-            var allPrev = curr.Select(x => long.Parse(x[0].Value)).ToArray();
+            List<ViewRowDto> curr = view.GetRows(par);
+            var allPrev = curr.Select(x => long.Parse(x.Values[0].Value)).ToArray();
             
 
             var prev= reg.LoadByIds(allPrev);

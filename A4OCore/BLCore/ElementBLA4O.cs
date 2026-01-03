@@ -178,19 +178,28 @@ namespace A4OCore.BLCore
                             break;
                         case ValueDesignType.DATE:
                             {
-
-                                string val = jVal.GetString();
-                                if (DateTime.TryParse(val, out DateTime dt))
                                 {
-                                    obj.DateVal = dt;
+                                    string val = jVal.GetString();
+                                    if (DateTime.TryParse(val, out DateTime dt))
+                                    {
+                                        obj.DateVal = dt;
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         case ValueDesignType.COMMENT:
                         case ValueDesignType.STRING:
                         case ValueDesignType.OPTIONSET:
+                        
                             obj.StringVal = jVal.GetString();
                             break;
+                        case ValueDesignType.LINK:
+                            {
+                                string val = jVal.GetString();
+                                obj.StringVal = val;
+                                obj.IntVal = JsonSerializer.Deserialize<JsonElement>(val).GetProperty("id").GetInt64();
+                            break;
+                            }
 
 
                     }
@@ -200,7 +209,7 @@ namespace A4OCore.BLCore
             }
 
 
-            BaseDesignDto itemDesign = design.ItemsDesignBase[0];
+            //BaseDesignDto itemDesign = design.ItemsDesignBase[0];
 
             return result;
         }
@@ -357,7 +366,7 @@ namespace A4OCore.BLCore
             }
         }
 
-
+        
         public ElementValueA4ODto this[int intEnumElement, int idx = 0]
         {
             get

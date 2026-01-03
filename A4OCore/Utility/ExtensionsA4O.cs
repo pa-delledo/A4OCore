@@ -1,6 +1,9 @@
 ﻿
 using A4OCore.Models;
 using A4ODto;
+using A4ODto.View;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 
 namespace A4OCore.Utility
@@ -87,15 +90,44 @@ namespace A4OCore.Utility
                 case ValueDesignType.ACTION:
                 case ValueDesignType.BUTTON:
                 case ValueDesignType.OPTIONSET:
+                case ValueDesignType.LINK:
                     res = el.StringVal;
                     break;
-                case ValueDesignType.LINK:
-                    res = el.IntVal + "/" + el.StringVal;
-                    break;
+
                 default:
                     break;
             }
             return res;
+        }
+        public static LinkValueDto GetValueLink(this ElementValueA4ODto val)
+        {
+            if (string.IsNullOrEmpty(val.StringVal)) return null;
+            try
+            {
+                return JsonSerializer.Deserialize<LinkValueDto>(val.StringVal);
+            }
+            catch
+            {
+                return null;
+            }
+
+        }
+        public static void SetValueLink(this ElementValueA4ODto val, LinkValueDto  likVal)
+        {
+            
+            val.StringVal= JsonSerializer.Serialize<LinkValueDto>(likVal);
+        }
+
+
+        public static ViewRowDto GetEmptyViewRowDto(this ElementA4ODto el)
+        {
+            return new ViewRowDto()
+            {
+                Values = new List<CellViewA4ODto>(),
+                ElementId = el.Id,
+                ElementName = el.ElementName
+
+            };
         }
         public static string Menu2String(this MenuBLA4ODto menu, int i = 0)
         {

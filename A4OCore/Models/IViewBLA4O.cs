@@ -8,7 +8,7 @@ namespace A4OCore.Models
 
         public string[] ColumnNames { get; }
 
-        public List<List<CellViewA4ODto>> GetRows(Dictionary<string, object> parameters);
+        public List<ViewRowDto> GetRows(Dictionary<string, object> parameters);
         public string ViewName { get; }
 
         //[Inject]
