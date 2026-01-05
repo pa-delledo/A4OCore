@@ -115,9 +115,12 @@ namespace A4OCore.Models
         {
             this.Add(new ValueDesignBase(label, valueType, enEl, enumTab));
         }
-        public void AddOptionSet(string label, int enEl, int enumTab, Dictionary<string, string> optSet)
+        public void AddOptionSet(string label, int enEl, int enumTab, Dictionary<string, string> optSet, bool triggerOnChange=false)
         {
-            this.Add(new ValueDesignBase(label, enEl, enumTab, optSet));
+            this.Add(new ValueDesignBase(label, enEl, enumTab, optSet)
+            {
+                TriggerOnChange= triggerOnChange
+            });
         }
 
         public void Add(string label, ValueDesignType valueType, string? elementName, string? tableName = null)

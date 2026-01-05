@@ -14,6 +14,17 @@ namespace A4OCore.BLCore
 
 
     {
+        public string GetOptionSetDescription(int idElement, string code)
+        {
+            BaseDesignDto baseDesignDto = null;
+            return GetOptionSetDescription(idElement, code, ref baseDesignDto);
+        }
+        public string GetOptionSetDescription(int idElement, string code, ref BaseDesignDto baseDesignDto)
+        {
+            if (string.IsNullOrEmpty(code)) return string.Empty;
+            baseDesignDto = baseDesignDto ?? this.Design.ItemsDesignBase.FirstOrDefault(x => x.IdElement == idElement);
+            return baseDesignDto?.OptionsSetValues[code];
+        }
 
         public virtual void OnOpen(bool isNew)
         {
@@ -70,10 +81,11 @@ namespace A4OCore.BLCore
             BaseDesignDto itemDesign = design.ItemsDesignBase[0];
             foreach (ElementValueA4ODto? val in values)
             {
-                if (itemDesign.InfoData != val.InfoData)
+                if (itemDesign?.InfoData != val.InfoData)
                 {
-                    itemDesign = design.ItemsDesignBase.First(x => x.InfoData == val.InfoData);
+                    itemDesign = design.ItemsDesignBase.FirstOrDefault(x => x.InfoData == val.InfoData);
                 }
+                if (itemDesign is null) continue;
                 bool skip = false;
                 skip = SkipCurrentItem(filterElements, itemDesign.IdElement, val.Idx);
 
