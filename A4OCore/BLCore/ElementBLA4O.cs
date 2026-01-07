@@ -233,7 +233,14 @@ namespace A4OCore.BLCore
                             {
                                 string val = jVal.GetString();
                                 obj.StringVal = val;
-                                obj.IntVal = JsonSerializer.Deserialize<JsonElement>(val).GetProperty("id").GetInt64();
+                                obj.IntVal = -1;
+                                if (!string.IsNullOrEmpty(val))
+                                {
+                                    obj.IntVal = JsonSerializer.Deserialize<JsonElement>(val).GetProperty("id").GetInt64();
+                                }
+                                
+
+                                
                             break;
                             }
 
