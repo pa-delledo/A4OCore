@@ -7,6 +7,7 @@ using A4ODto.Action;
 using A4ODto.View;
 using System.Data;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace A4OCore.BLCore
 {
@@ -95,9 +96,32 @@ namespace A4OCore.BLCore
                 designValueDto.Value = val.ToStringA4O();
                 SetDesignValue(val!, ref designValueDto);
                 CustomizeElementView(designValueDto);
-                designValueDtos.Add(designValueDto); 
+                if (designValueDto.DesignType == ValueDesignType.LINK || designValueDto.DesignType == ValueDesignType.VIEW)
+                {
+                    var par= SetFilterParams(designValueDto);
+                    
+                    designValueDto.LinkJsonFilter = par?.ToJsonString();
+                    
+                }
+                designValueDtos.Add(designValueDto);
             }
             return designValueDtos;
+        }
+
+        
+        /// <summary>
+        /// ex:
+        /// return new JsonObject
+    ///{
+    ///    ["Nome"] = "Mario",
+    ///    ["Eta"] = 30
+    ///};
+    /// </summary>
+    /// <param name="designValueDto"></param>
+    /// <returns></returns>
+    public virtual JsonObject SetFilterParams(ViewValueDto designValueDto) 
+        {
+            return null;
         }
         public virtual void CustomizeElementView(ViewValueDto designValueDto)
         {
