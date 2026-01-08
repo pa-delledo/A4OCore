@@ -1,8 +1,60 @@
 ﻿using A4OCore.BLCore;
 using A4OCore.Models;
+using Microsoft.Data.Sqlite;
 
 namespace A4OCore.Store
 {
+    public abstract class Expression
+    {
+        public abstract string ToSql();
+    }
+
+    //public class ItemExpression : Expression
+    //{
+    //    Expression item { get; set; }
+    //    ItemExpression (int item , string operation , params SqliteParameter[] par)
+    //    {
+    //        par.ParameterName
+            
+    //    }
+    //}
+    public class NotExpression : Expression
+    {
+        Expression item { get; set; }
+        NotExpression(Expression item)
+        {
+            this.item = item;
+        }
+        public override string ToSql()
+        {
+            return " not (" + item.ToSql() + ")";
+        }
+    }
+    public class AndExpression : Expression
+    {
+        List<Expression> items { get; set; } = new List<Expression>();
+        AndExpression(params Expression[] items)
+        {
+            this.items=items.ToList();
+        }
+        public override string ToSql()
+        {
+            return "(" + string.Join(" and ", items.Where(x => x != null).Select(x => x.ToSql())) + ")";
+        }
+    }
+    public class OrExpression : Expression
+    {
+        List<Expression> items { get; set; } = new List<Expression>();
+        OrExpression(params Expression[] items)
+        {
+            this.items = items.ToList();
+        }
+        public override string ToSql()
+        {
+            return "(" + string.Join(" or ", items.Where(x => x != null).Select(x => x.ToSql())) + ")";
+        }
+    }
+
     public enum OrderByEnum { Id, ParentName, ParentIds, Date, DateChange, Deleted }
     public class FilterA4O
     {
@@ -21,7 +73,7 @@ namespace A4OCore.Store
         public int[]? ResultValues { get; private set; }
         public bool Ascending { get; private set; }
         public OrderByEnum? OrderBy { get; private set; }
-
+        public Expression FilterItems {  get; private set; }
         public FilterA4O()
         {
         }

@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <Folder Include="Extension\" />
-    <Folder Include="NewFolder\" />
     <Folder Include="Store\OnFile\" />
   </ItemGroup>
 
