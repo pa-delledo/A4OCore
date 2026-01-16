@@ -91,11 +91,12 @@ namespace A4OCore.Utility
                 case ValueDesignType.BUTTON:
                 case ValueDesignType.OPTIONSET:
                 case ValueDesignType.LINK:
+                case ValueDesignType.ATTACHMENT:
                     res = el.StringVal;
                     break;
 
                 default:
-                    break;
+                    throw new Exception("NOT DEFINED TYPE!!!");
             }
             return res;
         }

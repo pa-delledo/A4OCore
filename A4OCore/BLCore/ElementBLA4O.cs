@@ -165,7 +165,7 @@ namespace A4OCore.BLCore
 
                 ElementValueA4ODto obj = new ElementValueA4ODto();
                 obj.InfoData = cache.design.InfoData;
-                obj.Id = idElement;
+                obj.Id = id;
                 int idx = 0;
                 if (element.TryGetProperty("idx", out JsonElement jIdx))
                 {
@@ -226,6 +226,7 @@ namespace A4OCore.BLCore
                         case ValueDesignType.COMMENT:
                         case ValueDesignType.STRING:
                         case ValueDesignType.OPTIONSET:
+                        case ValueDesignType.ATTACHMENT:
                         
                             obj.StringVal = jVal.GetString();
                             break;
@@ -238,12 +239,11 @@ namespace A4OCore.BLCore
                                 {
                                     obj.IntVal = JsonSerializer.Deserialize<JsonElement>(val).GetProperty("id").GetInt64();
                                 }
-                                
-
-                                
                             break;
                             }
-
+                        default:
+                            throw new Exception("NOT DEFINED TYPE!!!");
+                            
 
                     }
 
