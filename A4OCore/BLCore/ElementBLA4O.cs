@@ -15,6 +15,18 @@ namespace A4OCore.BLCore
 
 
     {
+
+        public static T GetEnumOptional<T>(string valueName) where T : struct, Enum
+        {
+            if (!Enum.TryParse<T>(valueName, true, out T result))
+            {
+                // 3. Eccezione specifica con dettagli utili
+                throw new ArgumentException($"Il valore '{valueName}' non è un nome valido per l'enum {typeof(T).Name}.");
+            }
+
+            return result; // Nessun cast necessario
+            //return Enum.TryParse<T>(valueName, true, out T result) ? result : null;
+        }
         public string GetOptionSetDescription(int idElement, string code)
         {
             BaseDesignDto baseDesignDto = null;
