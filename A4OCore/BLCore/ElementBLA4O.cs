@@ -447,7 +447,7 @@ namespace A4OCore.BLCore
 
         }
 
-        private IEnumerable<ElementValueA4ODto> GetElementsTable(int intEnumTable)
+        public IEnumerable<ElementValueA4ODto> GetElementsTable(int intEnumTable)
         {
             IEnumerable<int> InfoDataCurrentTable = Design.ItemsDesignBase.Where(x => x.Table == intEnumTable).Select(x => x.InfoData);
             var found = CurrentElement?.Values.Where(x => InfoDataCurrentTable.Contains(x.InfoData));
@@ -556,6 +556,10 @@ namespace A4OCore.BLCore
         public List<ElementA4ODto> LoadByIds(params long[] ids)
         {
             return LoadByIdsAsync(ids).GetAwaiter().GetResult();
+        }
+        public ElementA4ODto LoadById(long id)
+        {
+            return LoadByIdsAsync(new[] { id}).GetAwaiter().GetResult().FirstOrDefault();
         }
         public async Task<List<ElementA4ODto>> LoadByIdsAsync(params long[] ids)
         {
