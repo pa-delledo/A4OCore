@@ -67,7 +67,7 @@ namespace A4OCore.Store.DB.SQLLite
             {
                 where.Add("(" +
                  (Filter.InvertSelectionParentIds ? " not " : " ") +
-                 (Filter.ParentIds.Length == 0 ? " 1=0 " : $" main.id in ({string.Join(",", Filter.ParentIds)})"
+                 (Filter.ParentIds.Length == 0 ? " 1=0 " : $" main.idParent in ({string.Join(",", Filter.ParentIds)})"
                  ) +
                  ") ");
             }
