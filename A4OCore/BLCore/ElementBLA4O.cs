@@ -330,7 +330,7 @@ namespace A4OCore.BLCore
         {
 
         }
-
+        
         private ElementA4ODto _currentElement = null;
         public ElementA4ODto CurrentElement
         {

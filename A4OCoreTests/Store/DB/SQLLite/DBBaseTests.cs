@@ -66,6 +66,68 @@ namespace A4OCore.Store.DB.SQLLite.Tests
 
         }
 
+
+
+        [TestMethod()]
+        public void LoadLastNElement()
+        {
+            Task.Run(() => LoadLastNElementAsync()).GetAwaiter().GetResult();
+
+        }
+        public async void LoadLastNElementAsync()
+        {
+
+            {
+                DropTables("TEST");
+                var el1 = CreateElement();
+                //DBBase dBBase = new DBBase("TEST", el1.Item2);
+                dbBase.SetTableInfo("TEST", el1.Item2);
+                el1.Item1.Date= DateTime.Today.AddDays(-10);
+                //dBBase.Initialize();
+
+                await dbBase.SaveAsync(el1.Item1);
+                el1.Item1.Date = DateTime.Today.AddDays(-100);
+                await dbBase.SaveAsync(el1.Item1);
+
+                var el2 = CreateElement();
+                el2.Item1.Date = DateTime.Today.AddDays(-8);
+                await dbBase.SaveAsync(el2.Item1);
+
+                var el3 = CreateElement();
+                el3.Item1.Date = DateTime.Today.AddDays(-1);
+                await dbBase.SaveAsync(el3.Item1);
+
+                var f = new FilterA4O();
+                f.WhereCustomFilter_Last_N_whit_Parent(1 , el1.Item1.IdParent, el2.Item1.IdParent, el3.Item1.IdParent);
+                var r = await dbBase.LoadAsync(f);
+                Assert.IsNotNull(r);
+                Assert.IsTrue(r.Count() == 1);
+                Assert.IsTrue(r[0].Equals(el3.Item1, el3.Item2));
+
+                f = new FilterA4O();
+                f.WhereCustomFilter_Last_N_whit_Parent(1, el1.Item1.IdParent, el2.Item1.IdParent, el3.Item1.IdParent);
+                f.WhereDate(null, DateTime.Today.AddDays(-2));
+                r = await dbBase.LoadAsync(f);
+                Assert.IsNotNull(r);
+                Assert.IsTrue(r.Count() == 1);
+                Assert.IsTrue(r[0].Equals(el2.Item1, el2.Item2));
+
+
+                f = new FilterA4O();
+                f.WhereCustomFilter_Last_N_whit_Parent(2, el1.Item1.IdParent, el2.Item1.IdParent, el3.Item1.IdParent);
+                
+                r = await dbBase.LoadAsync(f);
+                Assert.IsNotNull(r);
+                Assert.IsTrue(r.Count() == 2);
+                
+
+
+
+            }
+
+        }
+
+
         [TestMethod()]
         public void LoadTestFilterTop()
         {

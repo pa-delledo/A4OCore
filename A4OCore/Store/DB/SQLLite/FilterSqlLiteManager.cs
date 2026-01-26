@@ -1,19 +1,28 @@
 ﻿using Microsoft.Data.Sqlite;
+using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace A4OCore.Store.DB.SQLLite
 {
     internal class FilterSqlLiteManager
     {
 
-        public FilterSqlLiteManager(FilterA4O filter)
+        public FilterSqlLiteManager(string mainTableName , string valueTableName ,FilterA4O filter)
         {
             Filter = filter;
+            MainTableName = mainTableName;
+            ValueTableName = valueTableName;
         }
         FilterA4O Filter;
+        readonly string MainTableName;
+        readonly string ValueTableName;
 
         public List<SqliteParameter> Parameters { get; } = new List<SqliteParameter>();
 
-        private String GetQueryFilter(string mainTableName, string valueTableName)
+        private string GetQueryFilter(string mainTableName, string valueTableName)
         {
             string sqlFilter = " SELECT distinct main.id FROM " + mainTableName + " as main " +
         " left join " + valueTableName + " as  val " +
@@ -124,24 +133,75 @@ namespace A4OCore.Store.DB.SQLLite
                     this.Parameters.Add(new SqliteParameter(parName, Filter.DateChange.Value.from.Value.ToString(FORMAT_DATE_SQL)));
                 }
             }
+            if((Filter.CustomFilter?.Count??0) > 0)
+            {
+                int i = 0;
+                foreach (var serFilter in Filter.CustomFilter)
+                {
+                    i++;
+                    CustomFilterClass? customFilter = JsonSerializer.Deserialize<CustomFilterClass>(serFilter);
+                    switch (customFilter.CustomFilterName)
+                    {
+                        case CustomTypeQuery.Last_N_with_Parent:
+                        {
+                                var g = Sql4LAST_N_WITH_PARENT(i, MainTableName, customFilter);
+                                where.Add(g.sql);
+                                Parameters.AddRange(g.par);
+                            break;
+                        }
+                    }
+                }
+            }
+
             sqlFilter +=
                 (where.Count() == 0 ? "" : " where ( " + string.Join(" and ", where) + " ) ");
             return sqlFilter;
         }
+        private (string sql , IEnumerable< SqliteParameter> par) Sql4LAST_N_WITH_PARENT(int idxCustom,string mainTableName ,CustomFilterClass customFilter)
+        {
+            string sql = @$"main.id in ( (
+    SELECT id from (select
+        p{idxCustom}.id,
+        ROW_NUMBER() OVER (
+            PARTITION BY p{idxCustom}.idParent
+            ORDER BY p{idxCustom}.[date] DESC
+        ) AS rn
+    FROM {mainTableName} p{idxCustom}
+    WHERE p{idxCustom}.idParent IN ({string.Join(',', customFilter.IdParents)})   -- i tuoi N idParent
+) as t{idxCustom} 
+WHERE t{idxCustom}.rn <= @customParam{idxCustom} ))";
+            SqliteParameter sqliteParameter = new SqliteParameter($"@customParam{idxCustom}", customFilter.N4Parent);
 
-        public string GetSql(string mainTableName, string valueTableName)
+            return (sql, [sqliteParameter]);
+            //select id from(SELECT
+        
+            //    p1.id,
+            //    ROW_NUMBER() OVER(
+            //        PARTITION BY p1.idParent
+        
+            //        ORDER BY p1.[date] DESC
+            //    ) AS rn
+        
+            //FROM TEST p1
+        
+            //WHERE p1.idParent IN(1, 1, 1)) as t2   where t2.rn <= 2-- i tuoi N idParent
+
+        }
+
+        
+        public string GetSql()
         {
             string sql = "";
 
             if (Filter == null)
             {
-                sql = "SELECT m.*,v.* FROM " + mainTableName + " m " +
-                " left join " + valueTableName + " v on m.id = v.id";
+                sql = "SELECT m.*,v.* FROM " + MainTableName + " m " +
+                " left join " + ValueTableName + " v on m.id = v.id";
                 return sql;
             }
 
-            string sqlResult = "SELECT t.*,tv.* FROM " + mainTableName + " t " +
-                " left join " + valueTableName + " tv on t.id = tv.id";
+            string sqlResult = "SELECT t.*,tv.* FROM " + MainTableName + " t " +
+                " left join " + ValueTableName + " tv on t.id = tv.id";
 
             if (Filter.ResultValues != null)
             {
@@ -170,7 +230,7 @@ namespace A4OCore.Store.DB.SQLLite
             sqlResult += ";";
 
             sql = "WITH Filtered AS ("
-                + GetQueryFilter(mainTableName, valueTableName)
+                + GetQueryFilter(MainTableName, ValueTableName)
                 + ") " + sqlResult;
             return sql;
 

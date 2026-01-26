@@ -1,6 +1,7 @@
 ﻿using A4OCore.BLCore;
 using A4OCore.Models;
 using Microsoft.Data.Sqlite;
+using System.Text.Json;
 
 namespace A4OCore.Store
 {
@@ -56,8 +57,13 @@ namespace A4OCore.Store
     }
 
     public enum OrderByEnum { Id, ParentName, ParentIds, Date, DateChange, Deleted }
+
+
+    internal enum CustomTypeQuery { Last_N_with_Parent }
     public class FilterA4O
     {
+        
+
         public long[]? Ids { get; private set; }
         public bool InvertSelectionIds { get; private set; } = false;
         public string[]? ParentName { get; private set; }
@@ -74,9 +80,11 @@ namespace A4OCore.Store
         public bool Ascending { get; private set; }
         public OrderByEnum? OrderBy { get; private set; }
         public Expression FilterItems {  get; private set; }
+        public  List<string> CustomFilter { get; private set; }
         public FilterA4O()
         {
         }
+
         public FilterA4O ResultOrderBy(OrderByEnum? orderByEnum, bool asc = true)
         {
             this.OrderBy = orderByEnum;
@@ -127,6 +135,22 @@ namespace A4OCore.Store
             return this;
         }
 
+        public FilterA4O WhereCustomFilter_Last_N_whit_Parent(int nForParent , params long[] idParents)
+        {
+
+            this.CustomFilter = this.CustomFilter ?? new List<string>();
+            
+            this.CustomFilter .Add(
+                JsonSerializer.Serialize(
+                new CustomFilterClass()
+            {
+                CustomFilterName = CustomTypeQuery.Last_N_with_Parent,
+                N4Parent = nForParent,
+                IdParents = idParents
+            } ));
+
+            return this;
+        }
         public FilterA4O WhereDate(DateTime? from, DateTime? to = null, bool invertSelectionDate = false)
         {
             this.Date = from == to == null ? null : (from, to);

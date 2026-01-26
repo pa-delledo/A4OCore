@@ -201,8 +201,8 @@ namespace A4OCore.Store.DB.SQLLite
 
         public async Task<List<ElementA4ODto>> LoadAsync(FilterA4O filter)
         {
-            FilterSqlLiteManager filterSqlLiteManager = new FilterSqlLiteManager(filter);
-            string sql = filterSqlLiteManager.GetSql(this.TableInfo.ElementName, this.TableInfo.ElementValuesName);
+            FilterSqlLiteManager filterSqlLiteManager = new FilterSqlLiteManager(this.TableInfo.ElementName, this.TableInfo.ElementValuesName ,filter);
+            string sql = filterSqlLiteManager.GetSql();
             var r = await LoadByFilter(sql, filterSqlLiteManager.Parameters);
             return r;
         }
