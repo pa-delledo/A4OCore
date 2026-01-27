@@ -1,7 +1,11 @@
 ﻿using Microsoft.Data.Sqlite;
+using System;
 using System.Collections.Concurrent;
+using System.Net.Mail;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -27,6 +31,7 @@ namespace A4OCore.Store.DB.SQLLite
             string sqlFilter = " SELECT distinct main.id FROM " + mainTableName + " as main " +
         " left join " + valueTableName + " as  val " +
         " on val.id=main.id ";
+            sqlFilter = SqlAddJoinFilter(sqlFilter, valueTableName);
             sqlFilter = SqlAddWhereFilter(sqlFilter);
 
             if (Filter.OrderBy.HasValue)
@@ -52,6 +57,179 @@ namespace A4OCore.Store.DB.SQLLite
             return sqlFilter;
 
         }
+
+        private string SqlAddJoinFilter(string sqlFilter, string valueTableName)
+        {
+            if ((this.Filter?.SimpleFilterConditions?.Count ??0)==0) return sqlFilter;
+            StringBuilder sb= new StringBuilder();
+            int i = -1;
+            var sFilters = this.Filter?.SimpleFilterConditions!;
+            int max = sFilters.Count;
+            while(++i<max)
+            {
+                string alias = $"valCond{i}";
+                string paramBase = $"@valCondPar{i}";
+                sb.AppendLine($" left join {valueTableName} as  {alias} " +
+                          $" on {alias}.id=main.id  ");
+                string condition= GetQueryFromSimpleFilterConditions(alias , paramBase, sFilters[i]);
+                sb.AppendLine(condition);
+            }
+            return sqlFilter + sb.ToString();
+        }
+
+        private string GetQueryFromSimpleFilterConditions(string alias, string paramBase, SimpleFilterCondition simpleFilterCondition)
+        {
+            var designItem = this.Filter.Design.ItemsDesignBase.First(x => x.IdElement == (int)((object)simpleFilterCondition.Field));
+            A4ODto.ValueDesignType desType = designItem.DesignType;
+            var condition = GetQueryFromSimpleFilterConditions(alias, paramBase, simpleFilterCondition, desType);
+            string result = $" and {alias}.infoData={designItem.InfoData}  {condition} ";
+            return result ; 
+        }
+        private static string GetQueryFromSimpleFilterConditions(string alias,string paramBase, SimpleFilterCondition simpleFilterCondition, A4ODto.ValueDesignType  designType)
+        {
+            string valueType = "";
+            switch (designType)
+            {
+                case A4ODto.ValueDesignType.FLOAT:
+                    valueType = "floatVal";
+                    break;
+
+                case A4ODto.ValueDesignType.INT:
+                valueType = "intVal";
+                    break;
+                case A4ODto.ValueDesignType.DATE:
+                    valueType = "dateVal";
+                    break;
+                case A4ODto.ValueDesignType.STRING:
+                case A4ODto.ValueDesignType.COMMENT:
+                case A4ODto.ValueDesignType.OPTIONSET:
+                case A4ODto.ValueDesignType.ATTACHMENT:
+                    valueType = "stringVal";
+                    break;
+                case A4ODto.ValueDesignType.LINK :
+                    if(simpleFilterCondition.Value is string)
+                    {
+                        valueType = "stringVal";
+                    }
+                    else
+                    {
+                        valueType = "intVal";
+                    }
+                    break;
+
+        //case A4ODto.ValueDesignType.VIEW = 7,
+        //case A4ODto.ValueDesignType.CALCULATE = 8,
+        //case A4ODto.ValueDesignType.BUTTON = 10,
+        //case A4ODto.ValueDesignType.ACTION = 12,
+        //case A4ODto.ValueDesignType.CRIPTED = 9,
+                default:
+                    throw new NotImplementedException();
+            }
+            return GetQueryFromSimpleFilterConditions($"{alias}.{valueType}", simpleFilterCondition, designType);
+                //case A4ODto.ValueDesignType.VIEW = 7,
+                //case A4ODto.ValueDesignType.CALCULATE = 8,
+                //case A4ODto.ValueDesignType.BUTTON = 10,
+                //case A4ODto.ValueDesignType.ACTION = 12,
+                //case A4ODto.ValueDesignType.CRIPTED = 9,
+
+
+        }
+        private static string GetQueryFromSimpleFilterConditions(
+    string paramName,
+    SimpleFilterCondition simpleFilterCondition,
+    A4ODto.ValueDesignType designType)
+        {
+            if (simpleFilterCondition == null)
+                throw new ArgumentNullException(nameof(simpleFilterCondition));
+
+            string column = $"{paramName}";
+            object value = simpleFilterCondition.Value;
+            Operator op = simpleFilterCondition.Operator;
+
+            // 1️⃣ Operator che NON vogliono value
+            if (op == Operator.IsVoid)
+                return $"AND {column} IS NULL";
+
+            if (op == Operator.IsNotVoid)
+                return $"AND {column} IS NOT NULL";
+
+            // 2️⃣ Tutti gli altri vogliono value
+            if (value == null)
+                throw new ArgumentException($"Operator {op} richiede un valore");
+
+            // 3️⃣ IN / NOT IN
+            if (op == Operator.In || op == Operator.NotIn)
+            {
+                if (!(value is System.Collections.IEnumerable enumerable) || value is string)
+                    throw new ArgumentException($"{op} richiede una IEnumerable");
+
+                var values = new List<string>();
+
+                foreach (var v in enumerable)
+                    values.Add(FormatValue(v, designType));
+
+                if (!values.Any())
+                    throw new ArgumentException($"{op} non può essere vuoto");
+
+                string sqlOp = op == Operator.In ? "IN" : "NOT IN";
+                return $"AND {column} {sqlOp} ({string.Join(",", values)})";
+            }
+
+            // 4️⃣ LIKE / START / END (solo stringhe)
+            if (op == Operator.Like || op == Operator.StartWith || op == Operator.EndWith)
+            {
+                if (designType != A4ODto.ValueDesignType.STRING &&
+                    designType != A4ODto.ValueDesignType.COMMENT)
+                    throw new ArgumentException($"{op} è valido solo per stringhe");
+
+                string strVal = value.ToString().Replace("'", "''");
+
+                string pattern = op switch
+                {
+                    Operator.Like => $"%{strVal}%",
+                    Operator.StartWith => $"{strVal}%",
+                    Operator.EndWith => $"%{strVal}",
+                    _ => throw new NotSupportedException()
+                };
+
+                return $"AND {column} LIKE '{pattern}'";
+            }
+
+            // 5️⃣ Operator standard (=, <, >, ecc.)
+            string sqlOperator = op switch
+            {
+                Operator.Equal => "=",
+                Operator.NotEqual => "<>",
+                Operator.GreaterThan => ">",
+                Operator.LessThan => "<",
+                Operator.GreaterEqThan => ">=",
+                Operator.LessEqThan => "<=",
+                _ => throw new NotSupportedException($"Operator {op} non supportato")
+            };
+
+            return $"AND {column} {sqlOperator} {FormatValue(value, designType)}";
+        }
+        private static string FormatValue(object value, A4ODto.ValueDesignType designType)
+        {
+            return designType switch
+            {
+                A4ODto.ValueDesignType.INT =>
+                    Convert.ToInt32(value).ToString(),
+
+                A4ODto.ValueDesignType.FLOAT =>
+                    Convert.ToDecimal(value).ToString(System.Globalization.CultureInfo.InvariantCulture),
+
+                A4ODto.ValueDesignType.DATE =>
+                    $"'{Convert.ToDateTime(value):yyyy-MM-dd HH:mm:ss}'",
+
+                A4ODto.ValueDesignType.STRING or A4ODto.ValueDesignType.COMMENT =>
+                    $"'{value.ToString().Replace("'", "''")}'",
+
+                _ => throw new NotImplementedException($"DesignType {designType} non supportato")
+            };
+        }
+
+
         private const string FORMAT_DATE_SQL = "yyyy-MM-dd HH:mm:ss";
         private string SqlAddWhereFilter(string sqlFilter)
         {

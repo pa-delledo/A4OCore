@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using A4ODto;
+using Microsoft.VisualBasic.FileIO;
+using System.Collections;
 
 namespace A4OCore.Store
 {
@@ -25,6 +27,75 @@ namespace A4OCore.Store
         IsVoid,
         IsNotVoid,
         NoOperator
+    }
+    
+    public class SimpleFilterCondition 
+    {
+        public Enum Field { get; }
+        
+        public Operator Operator { get; }
+        public object Value { get; }
+
+        public SimpleFilterCondition(Enum field, Operator @operator):this(field,  @operator, null )
+        {
+
+        }
+        public SimpleFilterCondition(Enum field , Operator @operator ,object value)
+        {
+            this.Field = field;
+            
+            this.Operator = @operator;
+            this.Value = value;
+            CheckFilter();
+        }
+
+        private void CheckFilter()
+        {
+            switch (this.Operator)
+            {
+                case Operator.IsVoid:
+                case Operator.Not:
+                case Operator.NoOperator:
+                case Operator.IsNotVoid:
+                    if (Value != null)
+                    {
+                        throw new Exception("unary operator");
+                    }
+                    break;
+                case Operator.Like:
+                case Operator.StartWith:
+                case Operator.EndWith:
+                    if (Value == null)
+                    {
+                        throw new Exception("value cannot be void");
+                    }
+                    if (!(Value is string))
+                    {
+                        throw new Exception("value must be string");
+                    }
+                    break;
+                case Operator.In:
+                case Operator.NotIn:
+                    if (Value == null)
+                    {
+                        throw new Exception("value cannot be void");
+                    }
+                    if (!((Value is IEnumerable<int>) ||
+                        (Value is IEnumerable<string>) ||
+                        (Value is IEnumerable<float>) ||
+                        (Value is IEnumerable<DateTime>) ||
+                        (Value is IEnumerable<double>)
+                        ))
+                    {
+                        throw new Exception("value must be a enumerable");
+                    }
+
+                    break;
+
+
+            }
+        }
+
     }
     public class FilterCondition : FilterBase
     {

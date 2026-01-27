@@ -66,8 +66,9 @@ namespace A4OCore.BLCore
         public abstract DesignElement Design { get; }
 
 
-        public ElementA4ODto NewElementByParent(long id, long idParent)
+        public ElementA4ODto NewElementByParent( long idParent, long forceId = -1)
         {
+            
             ElementA4O element = new ElementA4O()
             {
                 ElementName = this.Design.ElementName,
@@ -76,7 +77,7 @@ namespace A4OCore.BLCore
                 Date = DateTime.Today,
                 DateChange = DateTime.Now,
                 Deleted = false,
-                Id = id
+                Id = forceId
 
             };
             return element;
@@ -291,9 +292,9 @@ namespace A4OCore.BLCore
             return false;
         }
 
-        public ElementA4ODto NewElementByParent(long id, ElementA4ODto parent)
+        public ElementA4ODto NewElementByParent( ElementA4ODto parent, long forceId=-1)
         {
-            return NewElementByParent(id, parent.Id);
+            return NewElementByParent(parent.Id, forceId);
         }
 
 

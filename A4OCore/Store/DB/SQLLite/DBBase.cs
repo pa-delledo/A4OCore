@@ -3,6 +3,7 @@ using A4OCore.Utility;
 using A4ODto;
 using Microsoft.Data.Sqlite;
 using System.Data;
+using System.Diagnostics;
 
 namespace A4OCore.Store.DB.SQLLite
 {
@@ -223,7 +224,9 @@ namespace A4OCore.Store.DB.SQLLite
                         command.Parameters.AddRange(par);
 
                     }
-
+#if DEBUG
+                    Debug.WriteLine(sql);
+#endif
                     SqliteDataReader r = await command.ExecuteReaderAsync();
                     ElementA4ODto toAdd = new ElementA4ODto();
                     while (await r.ReadAsync())

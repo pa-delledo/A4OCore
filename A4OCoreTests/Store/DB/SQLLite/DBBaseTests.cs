@@ -181,6 +181,10 @@ namespace A4OCore.Store.DB.SQLLite.Tests
             }
 
         }
+        
+
+        
+        
 
         [TestMethod()]
         public void LoadTest()

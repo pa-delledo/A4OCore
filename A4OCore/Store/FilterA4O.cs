@@ -1,5 +1,6 @@
 ﻿using A4OCore.BLCore;
 using A4OCore.Models;
+using A4ODto;
 using Microsoft.Data.Sqlite;
 using System.Text.Json;
 
@@ -81,8 +82,20 @@ namespace A4OCore.Store
         public OrderByEnum? OrderBy { get; private set; }
         public Expression FilterItems {  get; private set; }
         public  List<string> CustomFilter { get; private set; }
+        public List<SimpleFilterCondition> SimpleFilterConditions { get; private set; }
+        public DesignElementDto Design { get; private set; }
+
         public FilterA4O()
         {
+        }
+
+        public FilterA4O WhereAndFilterOnValue(SimpleFilterCondition filter , DesignElementDto designElementDto=null)
+        {
+            if (this.Design is null && designElementDto is null) throw new Exception("please insert the design");
+            this.Design = this.Design ?? designElementDto;
+            this.SimpleFilterConditions = this.SimpleFilterConditions ?? new List<SimpleFilterCondition>();
+            this.SimpleFilterConditions.Add(filter);
+            return this;
         }
 
         public FilterA4O ResultOrderBy(OrderByEnum? orderByEnum, bool asc = true)
