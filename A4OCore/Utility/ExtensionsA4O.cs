@@ -126,7 +126,8 @@ namespace A4OCore.Utility
             {
                 Values = new List<CellViewA4ODto>(),
                 ElementId = el.Id,
-                ElementName = el.ElementName
+                ElementName = el.ElementName,
+                ParentId=el.IdParent
 
             };
         }
