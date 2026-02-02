@@ -5,10 +5,17 @@ namespace A4OCore.Cache
 {
     internal class A4OCache
     {
+        private static object lockObj = new object();
         public bool DesignCacheSet(string key, Func<DesignElement> f)
         {
             if (DesignCache.ContainsKey(key)) return false;
-            DesignCache.Add(key, f);
+
+            lock (lockObj)
+            {
+                if (DesignCache.ContainsKey(key)) return false;
+
+                DesignCache.Add(key, f);
+            }
 
             return true;
         }
