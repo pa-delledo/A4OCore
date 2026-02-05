@@ -32,7 +32,14 @@ namespace A4OCore.Store.DB.SQLLite
 
             string sql = $"INSERT INTO  {SQL_MAPID_TABLE_NAME} (elementName, tableName, columnName, idColumn)" +
                 "VALUES (@elementName, @tableName, @columnName, @idColumn);";
-            conn.Execute(sql, new { elementName = entry.ElementName, tableName = entry.TableName, columnName = entry.ColumnName, idColumn = entry.IdColumn });
+            try
+            {
+                conn.Execute(sql, new { elementName = entry.ElementName, tableName = entry.TableName, columnName = entry.ColumnName, idColumn = entry.IdColumn });
+            }catch(Exception e)
+            {
+                Console.WriteLine($"error on element:{entry.ElementName}  table:{entry.TableName} column:{entry.ColumnName} idColumn:{entry.IdColumn}");
+                throw;
+            }
 
 
 

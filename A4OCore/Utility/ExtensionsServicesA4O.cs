@@ -19,7 +19,7 @@ namespace A4OCore.Utility
 
             services.AddScoped<IStoreA4O, DBBase>();
             services.AddSingleton<A4O_MapIdRepository>();
-            services.AddSingleton<A4O_User>();
+            services.AddSingleton<IA4O_User ,A4O_User>();
             services.AddSingleton<IA4O_CheckEnumRepository, A4O_CheckEnumRepository>();
             //A4OServiceRegister reg = new(services);
             //services.AddSingleton<IServiceRegistrer>(reg);

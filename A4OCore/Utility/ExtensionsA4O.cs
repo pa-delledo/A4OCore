@@ -1,15 +1,39 @@
 ﻿
+using A4OCore.Cfg;
 using A4OCore.Models;
 using A4ODto;
 using A4ODto.View;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Xml.Linq;
 
 
 namespace A4OCore.Utility
 {
     public static class ExtensionsA4O
     {
+        private const string SEP_ROLES = ",";
+        
+        
+        public static string SerializeRoles(this User user)
+        {
+            return (user.Roles?.Length ?? 0) == 0 ? string.Empty : string.Join(SEP_ROLES, user.Roles.Select(x => x.ToString()));
+        }
+        public static void SetRolesSerialized(this User user, string roles)
+        {
+
+            user.Roles = DeserializeRoles(roles);
+        }
+        public static A4ORoles[] DeserializeRoles( string roles)
+        {
+            if (string.IsNullOrWhiteSpace(roles)) return Array.Empty<A4ORoles>();
+
+            return roles.Split(SEP_ROLES).
+            Select(x => Enum.TryParse<A4ORoles>(x, true, out A4ORoles r) ? (A4ORoles?)r : null)
+                .Cast<A4ORoles>().ToArray();
+
+        }
+
         public static bool Equals(this ElementA4ODto first, ElementA4ODto? other, List<DefinitionValueDto> definitionValues = null)
         {
             if (first == other) return true;

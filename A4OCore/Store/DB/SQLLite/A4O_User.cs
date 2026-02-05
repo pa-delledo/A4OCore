@@ -1,14 +1,16 @@
 ﻿using A4OCore.Cfg;
+using A4OCore.Utility;
 using Dapper;
 using Microsoft.Data.Sqlite;
+using System.Data;
 using System.Dynamic;
 
 namespace A4OCore.Store.DB.SQLLite
 {
-    public class A4O_User
+    public class A4O_User : IA4O_User
     {
         ConfigurationA4O Cfg;
-        private const string SQL_USER_ALL_COLUMNS = " name, mail, roles ";
+        private const string SQL_USER_ALL_COLUMNS = " name, mail, roles ,Enabled";
 
         public A4O_User(ConfigurationA4O cfg)
         {
@@ -23,6 +25,7 @@ namespace A4OCore.Store.DB.SQLLite
        //" Root TEXT, " +
        //" RootId INTEGER, " +
        " Roles TEXT, " +
+       " Enabled INTEGER, " +
        " PRIMARY KEY (Mail) " +
        " ); ";
         SqliteConnection Connection => UtilitySqlLite.GetConnection(Cfg);
@@ -35,25 +38,12 @@ namespace A4OCore.Store.DB.SQLLite
             conn.Open();
 
             string sql = $"INSERT INTO  {SQL_USER_TABLE_NAME} ({SQL_USER_ALL_COLUMNS})" +
-                "VALUES (@name, @mail, @roles);";
-            string roles = GetRolesString(user);
-            conn.Execute(sql, new { name = user.Name, mail = user.Mail, roles = roles });
+                "VALUES (@name, @mail, @roles,@enabled);";
+            string roles = user.SerializeRoles();
+            conn.Execute(sql, new { name = user.Name, mail = user.Mail, roles = roles ,enabled=user.Enabled?1:0 });
         }
 
-        private const string SEP_ROLES = ",";
-        private static string GetRolesString(User user)
-        {
-            return (user.Roles?.Length ?? 0) == 0 ? string.Empty : string.Join(SEP_ROLES, user.Roles.Select(x => x.ToString()));
-        }
-        private static A4ORoles[] GetRolesFromString(string roles)
-        {
-            if (string.IsNullOrWhiteSpace(roles)) return Array.Empty<A4ORoles>();
-
-            return roles.Split(SEP_ROLES).
-            Select(x => Enum.TryParse<A4ORoles>(x, true, out A4ORoles r) ? (A4ORoles?)r : null)
-                .Cast<A4ORoles>().ToArray();
-
-        }
+        
         public void Update(User user)
         {
             using var conn = Connection;
@@ -61,9 +51,10 @@ namespace A4OCore.Store.DB.SQLLite
             string sql = $@"
             UPDATE {SQL_USER_TABLE_NAME}
             SET Name = @name,
-                Roles=@roles
+                Roles=@roles,
+                Enabled=@enabled
             WHERE mail= @mail;";
-            conn.Execute(sql, new { name = user.Name, mail = user.Mail, roles = GetRolesString(user) });
+            conn.Execute(sql, new { name = user.Name, mail = user.Mail, roles = user.SerializeRoles(), enabled=user.Enabled?1:0 });
 
         }
 
@@ -113,7 +104,9 @@ namespace A4OCore.Store.DB.SQLLite
 
         private static User GetUserFromDb(dynamic user)
         {
-            return new User { Mail = user.Mail, Name = user.Name, Roles = GetRolesFromString(user.Roles) };
+            var result=new User { Mail = user.Mail, Name = user.Name, Enabled=user.Enabled>0 };
+            result.SetRolesSerialized(user.Roles as string);
+            return result;
         }
 
 

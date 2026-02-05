@@ -17,7 +17,7 @@ namespace A4OCore.Store.DB.SQLLite.Tests
     public class A4O_UserTests
     {
         private const string MIA_MAIL = "aaa@gmail.com";
-        A4O_User a4O_User;
+        IA4O_User a4O_User;
         //private IKernel _kernel;
         [TestInitialize]
         public void Setup()
@@ -26,7 +26,7 @@ namespace A4OCore.Store.DB.SQLLite.Tests
             //services.AddTransient<DBBase>();
             services.AddA4ODependencies();
             var _provider = services.BuildServiceProvider();
-            a4O_User = _provider.GetRequiredService<A4O_User>();
+            a4O_User = _provider.GetRequiredService<IA4O_User>();
             //_kernel = new StandardKernel(new NinjectTestModule());
          
         }
