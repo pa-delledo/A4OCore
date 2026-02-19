@@ -13,7 +13,7 @@ namespace A4OCore.BLCore
     public enum EnumElement { pippo=1, pluto ,paperino}
         public enum EnumTable { _=1 }
 
-    public class Class1 : ElementBLA4O 
+    public class Class1 : ElementBaseA4O
     {
         public Class1(IStoreA4O storeManager, IA4O_CheckEnumRepository checkEnum) : base(storeManager, checkEnum)
         {
@@ -54,7 +54,7 @@ namespace A4OCore.BLCore
 
         
 
-        public override List<MessageA4O> OnCheck()
+        public override List<MessageA4O> OnCheckElement()
         {
             throw new NotImplementedException();
         }

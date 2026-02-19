@@ -8,7 +8,11 @@
         public bool Enabled;
         public A4ORoles[] Roles;
 
-
+        public bool IsInRole(A4ORoles role)
+        {
+            return Roles.Contains(role);
+        }
+             
         private static readonly AsyncLocal<User> _userId = new AsyncLocal<User>();
 
         public static User CurrentUser

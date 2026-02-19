@@ -19,7 +19,7 @@ namespace A4OCore.BLCore.regina
 
 
 
-    public class ReginaBL : ElementBLA4O
+    public class ReginaBL : ElementBaseA4O
     {
         public ReginaBL(IStoreA4O storeManager, IA4O_CheckEnumRepository checkEnum) : base(storeManager, checkEnum)
         {
@@ -67,7 +67,7 @@ namespace A4OCore.BLCore.regina
         }
 
         
-        public override List<MessageA4O> OnCheck()
+        public override List<MessageA4O> OnCheckElement()
         {
             throw new NotImplementedException();
         }

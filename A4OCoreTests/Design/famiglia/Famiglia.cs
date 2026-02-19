@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace A4OCoreTests.Design.famiglia
 {
-    internal class Famiglia : ElementBLA4O
+    internal class Famiglia : ElementBaseA4O
     {
         public Famiglia(IStoreA4O storeManager, IA4O_CheckEnumRepository checkEnum) : base(storeManager, checkEnum)
         {
@@ -59,7 +59,7 @@ namespace A4OCoreTests.Design.famiglia
 
         
 
-        public override List<MessageA4O> OnCheck()
+        public override List<MessageA4O> OnCheckElement()
         {
             throw new NotImplementedException();
         }
