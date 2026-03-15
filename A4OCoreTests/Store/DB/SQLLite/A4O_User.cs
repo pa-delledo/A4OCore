@@ -45,13 +45,13 @@ namespace A4OCore.Store.DB.SQLLite.Tests
 
         }
 
-        private static User MioUser()
+        private static UserA4O MioUser()
         {
-            return new Cfg.User() { Mail = MIA_MAIL, Name = "io", Roles = new Cfg.A4ORoles[] { Cfg.A4ORoles.admin } };
+            return new Cfg.UserA4O() { Mail = MIA_MAIL, Name = "io", Roles = new Cfg.A4ORoles[] { Cfg.A4ORoles.admin } };
         }
-        private static User MioUser2()
+        private static UserA4O MioUser2()
         {
-            return new Cfg.User() { Mail = "aaa@a4o.a4o", Name = "user2", Roles = Array.Empty<Cfg.A4ORoles>() };
+            return new Cfg.UserA4O() { Mail = "aaa@a4o.a4o", Name = "user2", Roles = Array.Empty<Cfg.A4ORoles>() };
         }
 
         [TestMethod()]

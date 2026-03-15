@@ -32,7 +32,7 @@ namespace A4OCore.Store.DB.SQLLite
 
 
 
-        public void Insert(User user)
+        public void Insert(UserA4O user)
         {
             using var conn = Connection;
             conn.Open();
@@ -44,7 +44,7 @@ namespace A4OCore.Store.DB.SQLLite
         }
 
         
-        public void Update(User user)
+        public void Update(UserA4O user)
         {
             using var conn = Connection;
 
@@ -58,7 +58,7 @@ namespace A4OCore.Store.DB.SQLLite
 
         }
 
-        public void Delete(User u)
+        public void Delete(UserA4O u)
         {
             if (u == null) return;
 
@@ -81,7 +81,7 @@ namespace A4OCore.Store.DB.SQLLite
 
         }
 
-        public User? GetByMail(string mail)
+        public UserA4O? GetByMail(string mail)
         {
             using var conn = Connection;
 
@@ -102,15 +102,15 @@ namespace A4OCore.Store.DB.SQLLite
             return GetUserFromDb(user);
         }
 
-        private static User GetUserFromDb(dynamic user)
+        private static UserA4O GetUserFromDb(dynamic user)
         {
-            var result=new User { Mail = user.Mail, Name = user.Name, Enabled=user.Enabled>0 };
+            var result=new UserA4O { Mail = user.Mail, Name = user.Name, Enabled=user.Enabled>0 };
             result.SetRolesSerialized(user.Roles as string);
             return result;
         }
 
 
-        public List<User> GetAll(string filter, Dictionary<string, object> par = null)
+        public List<UserA4O> GetAll(string filter, Dictionary<string, object> par = null)
         {
 
 
@@ -132,7 +132,7 @@ namespace A4OCore.Store.DB.SQLLite
             List<dynamic> list = conn.Query(sql, expando).ToList();
 
 
-            return list.Select(y => (User)GetUserFromDb(y)).ToList();
+            return list.Select(y => (UserA4O)GetUserFromDb(y)).ToList();
         }
 
     }

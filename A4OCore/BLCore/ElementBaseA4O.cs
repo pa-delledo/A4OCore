@@ -26,7 +26,8 @@ namespace A4OCore.BLCore
         {
             get
             {
-                _isAdmin = _isAdmin.HasValue ? _isAdmin.Value : User.CurrentUser.IsInRole(A4ORoles.admin);
+                _isAdmin = IsInRole(_isAdmin, A4ORoles.admin, true);
+                
                 return _isAdmin.Value;
             }
         }
@@ -35,10 +36,29 @@ namespace A4OCore.BLCore
         {
             get
             {
-                _isReadOnly = _isReadOnly.HasValue ? _isReadOnly.Value : User.CurrentUser.IsInRole(A4ORoles.readOnly);
+
+                _isReadOnly = IsInRole(_isReadOnly, A4ORoles.readOnly,false); 
                 return _isReadOnly.Value;
             }
         }
+
+        private static bool? IsInRole(bool? a, A4ORoles role, bool defalutValue)
+        {
+#if DEBUG
+            try
+            {
+#endif
+                a = a.HasValue ? a.Value : UserA4O.CurrentUser.IsInRole(role);
+#if DEBUG
+            }
+            catch
+            {
+                a = defalutValue;
+            }
+#endif
+            return a;
+        }
+
         public sealed override void CustomizeElementView(ViewValueDto designValueDto)
         {
             if(IsReadOnly)

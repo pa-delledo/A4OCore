@@ -15,11 +15,11 @@ namespace A4OCore.Utility
         private const string SEP_ROLES = ",";
         
         
-        public static string SerializeRoles(this User user)
+        public static string SerializeRoles(this UserA4O user)
         {
             return (user.Roles?.Length ?? 0) == 0 ? string.Empty : string.Join(SEP_ROLES, user.Roles.Select(x => x.ToString()));
         }
-        public static void SetRolesSerialized(this User user, string roles)
+        public static void SetRolesSerialized(this UserA4O user, string roles)
         {
 
             user.Roles = DeserializeRoles(roles);

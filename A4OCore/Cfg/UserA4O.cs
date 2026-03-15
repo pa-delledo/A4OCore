@@ -1,7 +1,7 @@
 ﻿namespace A4OCore.Cfg
 {
     public enum A4ORoles { readOnly=1, admin = 333 }
-    public class User
+    public class UserA4O
     {
         public String Mail;
         public String Name;
@@ -13,9 +13,9 @@
             return Roles.Contains(role);
         }
              
-        private static readonly AsyncLocal<User> _userId = new AsyncLocal<User>();
+        private static readonly AsyncLocal<UserA4O> _userId = new AsyncLocal<UserA4O>();
 
-        public static User CurrentUser
+        public static UserA4O CurrentUser
         {
             get => _userId.Value;
             set => _userId.Value = value;
